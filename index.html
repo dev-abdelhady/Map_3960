@@ -1,0 +1,858 @@
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  #wrap {
+    width: 100%;
+    font-family: 'Anthropic Sans', sans-serif;
+    background: #080c18;
+    border-radius: 12px;
+    padding: 8px;
+    user-select: none;
+  }
+
+  #top-filters {
+    margin-bottom: 4px;
+  }
+
+  .filter-section {
+    margin-bottom: 4px;
+  }
+
+  .filter-label {
+    font-size: 9px;
+    color: #5566aa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 4px 1px;
+  }
+
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    padding: 2px 4px;
+  }
+
+  .filter-row button {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    border: 1px solid rgba(150, 180, 255, 0.25);
+    background: rgba(20, 30, 60, 0.5);
+    color: #8899bb;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .filter-row button.active {
+    color: #fff;
+    border-color: rgba(255,255,255,0.85);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.6), 0 0 8px 2px rgba(255,255,255,0.35);
+  }
+
+  .filter-row button.act-type {
+    background: rgba(60, 100, 220, 0.4);
+  }
+
+  .filter-row button.act-ally {
+    background: rgba(180, 80, 220, 0.35);
+  }
+
+  .filter-row button.act-joint {
+    background: rgba(180, 100, 10, 0.45);
+  }
+
+  .filter-row button.btn-add {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 20px;
+    border: 1px dashed rgba(150,180,255,0.3);
+    background: rgba(20,30,60,0.3);
+    color: rgba(150,180,255,0.5);
+    cursor: pointer;
+    transition: all 0.12s;
+    line-height: 1.4;
+  }
+  .filter-row button.btn-add:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.4);
+    background: rgba(60,80,160,0.3);
+  }
+
+  .sep {
+    height: 1px;
+    background: rgba(100, 130, 200, 0.12);
+    margin: 3px 0;
+  }
+
+  #svg-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  #map {
+    width: 100%;
+    display: block;
+  }
+
+  #tt {
+    position: absolute;
+    background: rgba(5, 10, 25, 0.97);
+    border: 1px solid rgba(100, 150, 255, 0.5);
+    border-radius: 8px;
+    padding: 8px 11px;
+    font-size: 11px;
+    color: #ddeeff;
+    pointer-events: none;
+    z-index: 50;
+    width: 195px;
+    display: none;
+  }
+
+  #tt .tt-h {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(100, 150, 255, 0.22);
+  }
+
+  #tt .r {
+    display: flex;
+    justify-content: space-between;
+    margin: 2px 0;
+    font-size: 10px;
+  }
+
+  #tt .l {
+    color: #6688aa;
+  }
+
+  #tt .v {
+    font-weight: 600;
+  }
+
+  #tt .comp {
+    color: #ffe060;
+    font-size: 9.5px;
+    margin-top: 3px;
+  }
+
+  #legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+    margin-top: 5px;
+  }
+
+  .li {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 9.5px;
+    color: #aabbcc;
+    white-space: nowrap;
+  }
+
+  .ld {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+  }
+
+  .lcirc {
+    border-radius: 50%;
+  }
+
+  .zone-li {
+    border-left: 2px solid;
+    padding-left: 4px;
+  }
+</style>
+
+<div id="wrap">
+
+  <div id="top-filters">
+    <div class="filter-section">
+      <div class="filter-label" style="color:#e89330;"> Type of Facility <span style="color:#aabafa;font-size:8px;text-transform:none;letter-spacing:0;"> Multiple selection allowed</span></div>
+      <div class="filter-row" id="type-bar">
+        <button class="active act-type" data-val="all" onclick="setTypeF('all',this)">All</button>
+        <button data-val="Construction" onclick="setTypeF('Construction',this)" style="color:#3b82f6">Construction</button>
+        <button data-val="Gathering" onclick="setTypeF('Gathering',this)" style="color:#a855f7">Gathering</button>
+        <button data-val="Production" onclick="setTypeF('Production',this)" style="color:#22c55e">Production</button>
+        <button data-val="Tech" onclick="setTypeF('Tech',this)" style="color:#f97316">Tech</button>
+        <button data-val="Weapons" onclick="setTypeF('Weapons',this)" style="color:#ef4444">Weapons</button>
+        <button data-val="Training" onclick="setTypeF('Training',this)" style="color:#eab308">Training</button>
+        <button data-val="Defense" onclick="setTypeF('Defense',this)" style="color:#06b6d4">Defense</button>
+        <button data-val="Expedition" onclick="setTypeF('Expedition',this)" style="color:#c2855a">Expedition</button>
+        <button data-val="Fortress" onclick="setTypeF('Fortress',this)" style="color:#9ca3af">Fortress</button>
+        <button data-val="Stronghold" onclick="setTypeF('Stronghold',this)" style="color:#e89330">Stronghold</button>
+      </div>
+    </div>
+    <div class="sep" style="width:100%;margin:10px 0;"></div>
+    <div class="filter-section">
+      <div class="filter-label" style="color:#e89330;"> Controlling Alliance <span style="color:#5566aa;font-size:8px;text-transform:none;letter-spacing:0;"> (Facilities over which the alliance has control rights) </span>
+        <span style="color:#aabafa;font-size:8px;text-transform:none;letter-spacing:0;"> Multiple selection allowed</span></div>
+      <div class="filter-row" id="ally-bar">
+        <button class="active act-ally" data-val="all" onclick="setAllyF('all',this)" style="color:#fff;">All</button>
+      </div>
+    </div>
+    <div class="sep" style="width:100%;margin:10px 0;"></div>
+    <div class="filter-section">
+      <div class="filter-label" style="color:#e89330;"> Joint Alliance <span style="color:#5566aa;font-size:8px;text-transform:none;letter-spacing:0;"> (Facilities where alliance has contestation rights) </span>
+      <span style="color:#aabafa;font-size:8px;text-transform:none;letter-spacing:0;"> Multiple selection allowed</span></div>
+      <div class="filter-row" id="joint-bar">
+        <button class="active act-joint" data-val="all" onclick="setJointF('all',this)" style="color:#fff;">All</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="svg-wrap">
+
+    <svg id="map" viewBox="0 0 700 640" role="img">
+
+      <title></title>
+      <defs>
+        <filter id="glow2">
+          <feGaussianBlur stdDeviation="2" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <filter id="glowS">
+          <feGaussianBlur stdDeviation="3" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <linearGradient id="gIce" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0a1a3a" stop-opacity="0.85" />
+          <stop offset="100%" stop-color="#0d2244" stop-opacity="0.75" />
+        </linearGradient>
+        <linearGradient id="gTun" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#1a3050" stop-opacity="0.82" />
+          <stop offset="100%" stop-color="#1e3a58" stop-opacity="0.72" />
+        </linearGradient>
+        <linearGradient id="gFert" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0d3028" stop-opacity="0.85" />
+          <stop offset="100%" stop-color="#0f3c2e" stop-opacity="0.75" />
+        </linearGradient>
+      </defs>
+
+      <!-- <rect width="700" height="640" fill="#080c18" />
+      <g opacity="0.45">
+        <circle cx="45" cy="30" r="0.8" fill="#fff" />
+        <circle cx="90" cy="15" r="0.5" fill="#fff" />
+        <circle cx="150" cy="50" r="0.7" fill="#fff" />
+        <circle cx="200" cy="20" r="0.5" fill="#fff" />
+        <circle cx="280" cy="40" r="0.6" fill="#fff" />
+        <circle cx="420" cy="18" r="0.8" fill="#fff" />
+        <circle cx="500" cy="35" r="0.5" fill="#fff" />
+        <circle cx="600" cy="22" r="0.7" fill="#fff" />
+        <circle cx="660" cy="50" r="0.5" fill="#fff" />
+        <circle cx="20" cy="100" r="0.6" fill="#fff" />
+        <circle cx="680" cy="80" r="0.8" fill="#fff" />
+        <circle cx="30" cy="200" r="0.5" fill="#fff" />
+        <circle cx="670" cy="200" r="0.6" fill="#fff" />
+        <circle cx="15" cy="400" r="0.7" fill="#fff" />
+        <circle cx="685" cy="350" r="0.5" fill="#fff" />
+        <circle cx="25" cy="550" r="0.6" fill="#fff" />
+        <circle cx="660" cy="500" r="0.8" fill="#fff" />
+        <circle cx="100" cy="610" r="0.5" fill="#fff" />
+        <circle cx="580" cy="620" r="0.6" fill="#fff" />
+        <circle cx="350" cy="625" r="0.5" fill="#fff" />
+        <circle cx="70" cy="320" r="0.6" fill="#fff" />
+        <circle cx="630" cy="320" r="0.6" fill="#fff" />
+      </g> -->
+
+      <!-- Zone polygons rendered by JS -->
+      <g id="zone-layer"></g>
+
+      <!-- Outer map boundary -->
+      <polygon points="350,12 688,320 350,628 12,320" fill="none" stroke="rgba(140,170,210,0.22)" stroke-width="1" />
+      <line x1="350" y1="12" x2="350" y2="628" stroke="rgba(140,170,210,0.04)" stroke-width="0.5" />
+      <line x1="12" y1="320" x2="688" y2="320" stroke="rgba(140,170,210,0.04)" stroke-width="0.5" />
+
+      <g id="layer"></g>
+    </svg>
+
+    <div id="tt"></div>
+
+  </div>
+
+  <div id="legend">
+
+    <div class="sep" style="width:100%;margin:1px 0;"></div>
+
+    <div class="li" style="gap:10px;">
+
+      <span>
+        <div class="ld lcirc" style="background:#4dbf8a;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="border-color:#4dbf8a;color:#4dbf8a"> Fertile Land</span>
+      </span>
+
+      <span>
+        <div class="ld lcirc" style="background:#6ab0f5;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="border-color:#6ab0f5;color:#6ab0f5"> Tundra</span>
+      </span>
+
+      <span>
+        <div class="ld lcirc" style="background:#7aaad8;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="border-color:#7aaad8;color:#7aaad8"> Ice Field</span>
+      </span>
+
+    </div>
+
+    <div class="sep" style="width:100%;margin:3px 0;"></div>
+
+    <div class="li" style="gap:10px;">
+
+      <span>
+        <div class="ld lcirc" style="background:#f5d060;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="color:#f5d060;font-size:9.5px;"> Sunfire Castle</span>
+      </span>
+
+      <span>
+        <div class="ld lcirc" style="background:#e89330;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="color:#e89330;font-size:9.5px;"> Stronghold x4</span>
+      </span>
+
+      <span>
+        <div class="ld lcirc" style="background:#9ca3af;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="color:#9ca3af;font-size:9.5px;"> Fortress x12</span>
+      </span>
+
+    </div>
+
+    <div class="sep" style="width:100%;margin:3px 0;"></div>
+
+    <div class="li" style="gap:10px;flex-wrap:wrap;">
+      <span>
+        <div class="ld lcirc" style="background:#3b82f6;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="font-size:9px;color:#aabbcc;">Construction Facility x12</span>
+      </span>
+      <span>
+        <div class="ld lcirc" style="background:#a855f7;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="font-size:9px;color:#aabbcc;">Gathering Facility x8</span>
+      </span>
+      <span>
+        <div class="ld lcirc" style="background:#22c55e;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="font-size:9px;color:#aabbcc;">Production Facility x8</span>
+      </span>
+      <span>
+        <div class="ld lcirc" style="background:#f97316;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="font-size:9px;color:#aabbcc;">Tech Facility x12</span>
+      </span>
+      <span>
+        <div class="ld lcirc" style="background:#ef4444;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="font-size:9px;color:#aabbcc;">Weapons Facility x11</span>
+      </span>
+      <span>
+        <div class="ld lcirc" style="background:#eab308;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="font-size:9px;color:#aabbcc;">Training Facility x8</span>
+      </span>
+      <span>
+        <div class="ld lcirc" style="background:#06b6d4;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="font-size:9px;color:#aabbcc;">Defense Facility x11</span>
+      </span>
+      <span>
+        <div class="ld lcirc" style="background:#c2855a;display:inline-block;vertical-align:middle;margin-right:2px;">
+        </div><span style="font-size:9px;color:#aabbcc;">Expedition Facility x4</span>
+      </span>
+    </div>
+
+    <div class="sep" style="width:100%;margin:1px 0;"></div>
+
+  </div>
+
+</div>
+
+<script>
+  
+  const CX = 350, CY = 320, HW = 338, HH = 308;
+
+  // Game coord system: X:0,Y:0 = bottom-left of diamond (SVG bottom point)
+  // X:0,Y:1199 = left point of diamond
+  // X:1199,Y:0 = right point of diamond
+  // X:1199,Y:1199 = top point of diamond
+  // Isometric transform:
+  //   SVG_x = CX + (gx/1199 - gy/1199) * HW
+  //   SVG_y = CY - (gx/1199 + gy/1199 - 1) * HH
+
+  function g2s(gx, gy) {
+    const nx = gx / 1199, ny = gy / 1199;
+    return [CX + (nx - ny) * HW, CY - (nx + ny - 1) * HH];
+  }
+  function gPts(corners) {
+    return corners.map(([gx, gy]) => g2s(gx, gy).map(v => v.toFixed(1)).join(',')).join(' ');
+  }
+
+  const NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) {
+    const e = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  }
+  function tx(content, attrs) {
+    const t = el('text', { ...attrs, 'pointer-events': 'none' });
+    t.textContent = content; return t;
+  }
+
+  // Zone corner coordinates (game coords) for each zone's 4 diamond corners:
+  // A diamond with game bounds [x0..x1, y0..y1] has corners at:
+  //   left  = (x0, (y0+y1)/2)  -- leftmost SVG point
+  //   top   = ((x0+x1)/2, y1)  -- topmost SVG point
+  //   right = (x1, (y0+y1)/2)  -- rightmost SVG point
+  //   bottom= ((x0+x1)/2, y0)  -- bottommost SVG point
+  // But the zone is a square in game coords, rendered isometrically as a diamond.
+  // Zone corners in game coords for a square [x0,x1]×[y0,y1]:
+  //   (x0,y0), (x0,y1), (x1,y1), (x1,y0)
+
+  // Zone corner dot data: zone name, color, and all 4 game-coord corners
+  const ZONE_CORNERS = [
+    // Ice Field - 4 outer diamond corners
+    { zone: 'Ice Field', col: '#7aaad8', gx: 0, gy: 0, r: 2.2 },
+    { zone: 'Ice Field', col: '#7aaad8', gx: 0, gy: 1199, r: 2.2 },
+    { zone: 'Ice Field', col: '#7aaad8', gx: 1199, gy: 1199, r: 2.2 },
+    { zone: 'Ice Field', col: '#7aaad8', gx: 1199, gy: 0, r: 2.2 },
+    // Tundra - 4 corners of square 300-899
+    { zone: 'Tundra', col: '#6ab0f5', gx: 300, gy: 300, r: 1.8 },
+    { zone: 'Tundra', col: '#6ab0f5', gx: 300, gy: 899, r: 1.8 },
+    { zone: 'Tundra', col: '#6ab0f5', gx: 899, gy: 899, r: 1.8 },
+    { zone: 'Tundra', col: '#6ab0f5', gx: 899, gy: 300, r: 1.8 },
+    // Fertile Land - 4 corners of square 450-749
+    { zone: 'Fertile Land', col: '#4dbf8a', gx: 450, gy: 450, r: 1.5 },
+    { zone: 'Fertile Land', col: '#4dbf8a', gx: 450, gy: 749, r: 1.5 },
+    { zone: 'Fertile Land', col: '#4dbf8a', gx: 749, gy: 749, r: 1.5 },
+    { zone: 'Fertile Land', col: '#4dbf8a', gx: 749, gy: 450, r: 1.5 },
+  ];
+
+  function buildZones() {
+    const zl = document.getElementById('zone-layer');
+    zl.innerHTML = '';
+
+    const zones = [
+      { x0: 0, x1: 1199, y0: 0, y1: 1199, fill: 'url(#gIce)', stroke: '#1a4080', sw: 1.0 },
+      { x0: 300, x1: 899, y0: 300, y1: 899, fill: 'url(#gTun)', stroke: '#3a6090', sw: 0.9 },
+      { x0: 450, x1: 749, y0: 450, y1: 749, fill: 'url(#gFert)', stroke: '#2d8a62', sw: 0.9 },
+    ];
+
+    // Draw zone fills
+    zones.forEach(z => {
+      const corners = [[z.x0, z.y0], [z.x0, z.y1], [z.x1, z.y1], [z.x1, z.y0]];
+      zl.appendChild(el('polygon', {
+        points: gPts(corners),
+        fill: z.fill, stroke: z.stroke,
+        'stroke-width': z.sw, 'stroke-opacity': '0.75'
+      }));
+    });
+
+    // Draw interactive corner dots (NO text labels on map)
+    ZONE_CORNERS.forEach(c => {
+      const [sx, sy] = g2s(c.gx, c.gy);
+      const g = el('g', { cursor: 'crosshair' });
+
+      // outer ring glow
+      g.appendChild(el('circle', {
+        cx: sx.toFixed(1), cy: sy.toFixed(1),
+        r: (c.r + 2).toString(), fill: c.col, opacity: '0.18'
+      }));
+      // main dot
+      g.appendChild(el('circle', {
+        cx: sx.toFixed(1), cy: sy.toFixed(1),
+        r: c.r.toString(), fill: c.col, stroke: 'rgba(255,255,255,0.6)', 'stroke-width': '0.6', opacity: '0.9'
+      }));
+
+      g.addEventListener('mouseenter', e => showTT(e,
+        `<div class="tt-h" style="color:${c.col}">${c.zone}</div>
+        <div class="r"><span class="l">Corner Point</span><span class="v">X:${c.gx} / Y:${c.gy}</span></div>`));
+      g.addEventListener('mousemove', e => placeTT(e));
+      g.addEventListener('mouseleave', hideTT);
+      zl.appendChild(g);
+    });
+  }
+
+  buildZones();
+
+  const FAC = [
+    { lv: 2, type: 'Defense Facility', y: 537, x: 138, ctrl: 'EMO', oth: ['TTA', 'EOD', 'LAR'] },
+    { lv: 2, type: 'Defense Facility', y: 768, x: 237, ctrl: 'KAQ', oth: [] },
+    { lv: 2, type: 'Defense Facility', y: 267, x: 438, ctrl: 'Sv2', oth: ['EMU'] },
+    { lv: 2, type: 'Defense Facility', y: 1038, x: 537, ctrl: 'SNO', oth: ['LoL', 'SnS'] },
+    { lv: 2, type: 'Defense Facility', y: 138, x: 666, ctrl: 'NEW', oth: [] },
+    { lv: 2, type: 'Defense Facility', y: 957, x: 738, ctrl: 'SIT', oth: ['TRN'] },
+    { lv: 2, type: 'Defense Facility', y: 438, x: 957, ctrl: 'ICE', oth: [] },
+    { lv: 2, type: 'Defense Facility', y: 666, x: 1068, ctrl: 'SVS', oth: ['TTW', 'YQT'] },
+    { lv: 4, type: 'Defense Facility', y: 717, x: 387, ctrl: 'ZRO', oth: ['SNO', 'EMO', 'Sv2', 'SnS'] },
+    { lv: 4, type: 'Defense Facility', y: 327, x: 588, ctrl: 'EMO', oth: ['NEW', 'Sv2'] },
+    { lv: 4, type: 'Defense Facility', y: 717, x: 816, ctrl: 'SIT', oth: ['SVS', 'LoL'] },
+
+    { lv: 1, type: 'Production Facility', y: 957, x: 138, ctrl: 'EMO', oth: ['KAQ'] },
+    { lv: 1, type: 'Production Facility', y: 138, x: 237, ctrl: 'SnS', oth: ['EMU'] },
+    { lv: 1, type: 'Production Facility', y: 1038, x: 327, ctrl: 'ZRO', oth: ['LoL'] },
+    { lv: 1, type: 'Production Facility', y: 138, x: 768, ctrl: 'NEW', oth: [] },
+    { lv: 1, type: 'Production Facility', y: 1068, x: 957, ctrl: 'SIT', oth: [] },
+    { lv: 1, type: 'Production Facility', y: 237, x: 1068, ctrl: 'S39', oth: ['SVS'] },
+    { lv: 1, type: 'Production Facility', y: 747, x: 1068, ctrl: 'TTW', oth: [] },
+    { lv: 1, type: 'Production Facility', y: 327, x: 138, ctrl: 'LAR', oth: ['SNO', 'EOD'] },
+
+    { lv: 1, type: 'Tech Facility', y: 237, x: 237, ctrl: 'SNO', oth: ['SnS'] },
+    { lv: 1, type: 'Tech Facility', y: 957, x: 237, ctrl: 'ZRO', oth: ['KAQ', 'EOD'] },
+    { lv: 1, type: 'Tech Facility', y: 537, x: 267, ctrl: 'EMO', oth: ['EOD', 'TTA', 'wlf', 'LAR'] },
+    { lv: 1, type: 'Tech Facility', y: 936, x: 537, ctrl: 'LoL', oth: [] },
+    { lv: 1, type: 'Tech Facility', y: 267, x: 666, ctrl: 'NEW', oth: [] },
+    { lv: 1, type: 'Tech Facility', y: 537, x: 936, ctrl: 'ICE', oth: [] },
+    { lv: 1, type: 'Tech Facility', y: 237, x: 957, ctrl: 'S39', oth: ['SVS'] },
+    { lv: 1, type: 'Tech Facility', y: 957, x: 957, ctrl: 'SIT', oth: [] },
+    { lv: 3, type: 'Tech Facility', y: 327, x: 327, ctrl: 'SNO', oth: ['SnS'] },
+    { lv: 3, type: 'Tech Facility', y: 867, x: 327, ctrl: 'EMO', oth: ['ZRO', 'TTA', 'KAQ', 'EOD'] },
+    { lv: 3, type: 'Tech Facility', y: 327, x: 867, ctrl: 'NEW', oth: ['S39', 'SVS', 'SAT'] },
+    { lv: 3, type: 'Tech Facility', y: 867, x: 867, ctrl: 'SIT', oth: ['SVS'] },
+
+    { lv: 1, type: 'Construction Facility', y: 138, x: 138, ctrl: 'SNO', oth: ['SnS', 'LAR'] },
+    { lv: 1, type: 'Construction Facility', y: 666, x: 138, ctrl: 'EMO', oth: ['LAR', 'EOD', 'KAQ'] },
+    { lv: 1, type: 'Construction Facility', y: 1038, x: 138, ctrl: 'ZRO', oth: [] },
+    { lv: 1, type: 'Construction Facility', y: 138, x: 537, ctrl: 'NEW', oth: ['EMU'] },
+    { lv: 1, type: 'Construction Facility', y: 1068, x: 666, ctrl: 'LoL', oth: [] },
+    { lv: 1, type: 'Construction Facility', y: 138, x: 1068, ctrl: 'S39', oth: ['SVS'] },
+    { lv: 1, type: 'Construction Facility', y: 567, x: 1068, ctrl: 'ICE', oth: [] },
+    { lv: 1, type: 'Construction Facility', y: 1068, x: 1068, ctrl: 'SIT', oth: ['VRb'] },
+    { lv: 3, type: 'Construction Facility', y: 666, x: 327, ctrl: 'ZRO', oth: ['SNO', 'TTA'] },
+    { lv: 3, type: 'Construction Facility', y: 327, x: 486, ctrl: 'EMO', oth: ['NEW'] },
+    { lv: 3, type: 'Construction Facility', y: 867, x: 768, ctrl: 'SIT', oth: ['EOD'] },
+    { lv: 3, type: 'Construction Facility', y: 567, x: 867, ctrl: 'NEW', oth: ['S39', 'SVS', 'ICE'] },
+
+    { lv: 2, type: 'Training Facility', y: 747, x: 138, ctrl: 'EMO', oth: ['EOD', 'KAQ'] },
+    { lv: 2, type: 'Training Facility', y: 486, x: 237, ctrl: 'wlf', oth: ['EOD', 'TTA'] },
+    { lv: 2, type: 'Training Facility', y: 138, x: 486, ctrl: 'SnS', oth: ['EMU'] },
+    { lv: 2, type: 'Training Facility', y: 957, x: 486, ctrl: 'ZRO', oth: ['SNO', 'LoL'] },
+    { lv: 2, type: 'Training Facility', y: 237, x: 768, ctrl: 'NEW', oth: [] },
+    { lv: 2, type: 'Training Facility', y: 1038, x: 768, ctrl: 'SIT', oth: [] },
+    { lv: 2, type: 'Training Facility', y: 747, x: 957, ctrl: 'SVS', oth: ['TMK'] },
+    { lv: 2, type: 'Training Facility', y: 486, x: 1068, ctrl: 'ICE', oth: [] },
+
+    { lv: 1, type: 'Gathering Facility', y: 666, x: 87, ctrl: 'EMO', oth: ['LAR', 'KAQ', 'EOD'] },
+    { lv: 1, type: 'Gathering Facility', y: 237, x: 138, ctrl: 'SNO', oth: ['LAR', 'SnS'] },
+    { lv: 1, type: 'Gathering Facility', y: 1068, x: 267, ctrl: 'ZRO', oth: ['LoL'] },
+    { lv: 1, type: 'Gathering Facility', y: 87, x: 537, ctrl: 'NEW', oth: [] },
+    { lv: 1, type: 'Gathering Facility', y: 1137, x: 636, ctrl: 'PAD', oth: ['LoL'] },
+    { lv: 1, type: 'Gathering Facility', y: 138, x: 957, ctrl: 'S39', oth: ['SVS'] },
+    { lv: 1, type: 'Gathering Facility', y: 936, x: 1068, ctrl: 'SIT', oth: [] },
+    { lv: 1, type: 'Gathering Facility', y: 567, x: 1137, ctrl: 'ICE', oth: ['lll', 'sVn'] },
+
+    { lv: 3, type: 'Expedition Facility', y: 567, x: 327, ctrl: 'ZRO', oth: ['TTA', 'wlf', 'Sv2'] },
+    { lv: 3, type: 'Expedition Facility', y: 867, x: 486, ctrl: 'SNO', oth: ['Sv2', 'SnS', 'LoL', 'EOD'] },
+    { lv: 3, type: 'Expedition Facility', y: 327, x: 768, ctrl: 'EMO', oth: ['NEW'] },
+    { lv: 3, type: 'Expedition Facility', y: 666, x: 867, ctrl: 'SIT', oth: ['SVS'] },
+
+    { lv: 2, type: 'Weapons Facility', y: 438, x: 138, ctrl: 'LAR', oth: ['TTA', 'EOD'] },
+    { lv: 2, type: 'Weapons Facility', y: 867, x: 138, ctrl: 'EMO', oth: ['KAQ'] },
+    { lv: 2, type: 'Weapons Facility', y: 138, x: 366, ctrl: 'Sv2', oth: ['SnS', 'EMU'] },
+    { lv: 2, type: 'Weapons Facility', y: 1068, x: 438, ctrl: 'ZRO', oth: ['LoL', 'PAD'] },
+    { lv: 2, type: 'Weapons Facility', y: 138, x: 867, ctrl: 'NEW', oth: [] },
+    { lv: 2, type: 'Weapons Facility', y: 1068, x: 867, ctrl: 'SIT', oth: [] },
+    { lv: 2, type: 'Weapons Facility', y: 327, x: 1068, ctrl: 'S39', oth: ['SVS'] },
+    { lv: 2, type: 'Weapons Facility', y: 867, x: 1068, ctrl: 'ZRO', oth: [] },
+    { lv: 4, type: 'Weapons Facility', y: 486, x: 387, ctrl: 'ZRO', oth: ['EMO', 'TTA'] },
+    { lv: 4, type: 'Weapons Facility', y: 867, x: 588, ctrl: 'SIT', oth: ['SNO', 'Sv2', 'EOD'] },
+    { lv: 4, type: 'Weapons Facility', y: 486, x: 816, ctrl: 'NEW', oth: ['S39', 'SVS', 'ICE'] },
+  ];
+
+  const FORTRESSES = [
+    { n: 1, x: 237, y: 828 }, { n: 2, x: 237, y: 606 }, { n: 3, x: 237, y: 348 },
+    { n: 4, x: 366, y: 237 }, { n: 5, x: 588, y: 237 }, { n: 6, x: 846, y: 237 },
+    { n: 7, x: 957, y: 348 }, { n: 8, x: 957, y: 606 }, { n: 9, x: 957, y: 828 },
+    { n: 10, x: 846, y: 957 }, { n: 11, x: 606, y: 957 }, { n: 12, x: 366, y: 957 },
+  ];
+  const STRONGHOLDS = [
+    { n: 1, x: 597, y: 800 }, { n: 2, x: 400, y: 597 }, { n: 3, x: 597, y: 400 }, { n: 4, x: 800, y: 597 },
+  ];
+  const SUNFIRE = { x: 597, y: 597 };
+
+  const COL = {
+    'Construction Facility': '#3b82f6',
+    'Gathering Facility': '#a855f7',
+    'Production Facility': '#22c55e',
+    'Tech Facility': '#f97316',
+    'Weapons Facility': '#ef4444',
+    'Training Facility': '#eab308',
+    'Defense Facility': '#06b6d4',
+    'Expedition Facility': '#c2855a',
+  };
+  const FMAP = {
+    'Construction': 'Construction Facility',
+    'Gathering': 'Gathering Facility',
+    'Production': 'Production Facility',
+    'Tech': 'Tech Facility',
+    'Weapons': 'Weapons Facility',
+    'Training': 'Training Facility',
+    'Defense': 'Defense Facility',
+    'Expedition': 'Expedition Facility'
+  };
+
+  const ALLY_COLS = ['#e879f9', '#f43f5e', '#fb923c', '#facc15', '#a3e635', '#f87171', '#e879f9',
+    '#22d3ee', '#fbbf24', '#60a5fa', '#818cf8', '#c084fc', '#f472b6', '#94a3b8', '#4ade80', '#34d399'];
+  const ALLIES = ['EMO', 'ZRO', 'SNO', 'SIT', 'NEW', 'SnS', 'LAR', 'S39', 'KAQ', 'wlf', 'LoL', 'ICE', 'TTW', 'PAD', 'SVS', 'Sv2'];
+  const ALLY_COLOR = {};
+  ALLIES.forEach((a, i) => ALLY_COLOR[a] = ALLY_COLS[i % ALLY_COLS.length]);
+
+  const allyBar = document.getElementById('ally-bar');
+  ALLIES.forEach(a => {
+    const btn = document.createElement('button');
+    btn.textContent = a;
+    btn.dataset.val = a;
+    btn.style.color = ALLY_COLOR[a];
+    btn.style.borderColor = ALLY_COLOR[a] + '55';
+    btn.dataset.origBorder = ALLY_COLOR[a] + '55';
+    btn.onclick = () => setAllyF(a, btn);
+    allyBar.appendChild(btn);
+  });
+
+  // Collect all unique joint alliance names from FAC.oth
+  const jointSet = new Set();
+  FAC.forEach(d => (d.oth || []).forEach(o => jointSet.add(o)));
+  const JOINT_ORDER = ['EMO', 'ZRO', 'SNO', 'YQT', 'NEW', 'SnS', 'LAR', 'S39', 'KAQ', 'wlf', 'LoL', 'ICE', 'TTW', 'PAD', 'SVS', 'Sv2'];
+  const JOINT_ALLIES = [...jointSet].sort((a, b) => {
+    const ia = JOINT_ORDER.indexOf(a), ib = JOINT_ORDER.indexOf(b);
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+  const jointBar = document.getElementById('joint-bar');
+  JOINT_ALLIES.forEach(a => {
+    const btn = document.createElement('button');
+    btn.textContent = a;
+    btn.dataset.val = a;
+    btn.style.color = ALLY_COLOR[a] || '#f5a820';
+    btn.style.borderColor = (ALLY_COLOR[a] || '#f5a820') + '55';
+    btn.dataset.origBorder = (ALLY_COLOR[a] || '#f5a820') + '55';
+    btn.onclick = () => setJointF(a, btn);
+    jointBar.appendChild(btn);
+  });
+
+  let curTypeF = new Set(['all']);
+  let curAllyF = new Set(['all']);
+  let curJointF = new Set(['all']);
+  const layer = document.getElementById('layer');
+  const tt = document.getElementById('tt');
+  const svgEl = document.getElementById('map');
+
+  function placeTT(e) {
+    const rect = svgEl.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    const tw = 195, th = tt.scrollHeight || 105;
+    let lx = cx + 14, ly = cy - 10;
+    if (lx + tw > rect.width - 4) lx = cx - tw - 14;
+    if (ly + th > rect.height - 4) ly = cy - th - 10;
+    if (ly < 2) ly = 2; if (lx < 2) lx = 2;
+    tt.style.left = lx + 'px'; tt.style.top = ly + 'px';
+  }
+  function showTT(e, html) { tt.innerHTML = html; tt.style.display = 'block'; placeTT(e); }
+  function hideTT() { tt.style.display = 'none'; }
+
+  // Generic toggle for a filter Set
+  // 'all' is exclusive: selecting it clears others; selecting any other clears 'all'
+  function toggleFilter(set, val) {
+    if (val === 'all') {
+      set.clear(); set.add('all');
+    } else {
+      set.delete('all');
+      if (set.has(val)) { set.delete(val); if (set.size === 0) set.add('all'); }
+      else { set.add(val); }
+    }
+  }
+
+  function syncBarStyle(barId, set, activeClass, origBorderAttr) {
+    document.querySelectorAll(`#${barId} button:not(.btn-add)`).forEach(b => {
+      const v = b.dataset.val;
+      const isActive = set.has(v);
+      b.classList.toggle('active', isActive);
+      b.classList.toggle(activeClass, isActive);
+      if (origBorderAttr) {
+        b.style.borderColor = isActive ? '' : (b.dataset.origBorder || '');
+      }
+    });
+  }
+
+  function setTypeF(val, btn) {
+    toggleFilter(curTypeF, val);
+    syncBarStyle('type-bar', curTypeF, 'act-type', false);
+    hideTT(); render();
+  }
+  function setAllyF(val, btn) {
+    toggleFilter(curAllyF, val);
+    syncBarStyle('ally-bar', curAllyF, 'act-ally', true);
+    hideTT(); render();
+  }
+  function setJointF(val, btn) {
+    toggleFilter(curJointF, val);
+    syncBarStyle('joint-bar', curJointF, 'act-joint', true);
+    hideTT(); render();
+  }
+
+  // Original fortress icon (from v4 - small diamond + tower + merlons)
+  function drawFort(sx, sy, color, sz, label, isStrong) {
+    const g = el('g', { transform: `translate(${sx.toFixed(1)},${sy.toFixed(1)})`, cursor: 'pointer' });
+    g.appendChild(el('polygon', {
+      points: `0,${-sz} ${sz},0 0,${sz} ${-sz},0`,
+      fill: color, stroke: isStrong ? '#fbbf24' : '#9ca3af', 'stroke-width': '0.9'
+    }));
+    g.appendChild(el('rect', {
+      x: '-2', y: `${-sz - 4}`, width: '4', height: '4',
+      fill: color, stroke: isStrong ? '#fbbf24' : '#9ca3af', 'stroke-width': '0.6'
+    }));
+    [[-2, -sz - 6], [0.5, -sz - 6]].forEach(([bx, by]) => {
+      g.appendChild(el('rect', {
+        x: bx, y: by, width: '1.4', height: '2',
+        fill: isStrong ? '#fbbf24' : '#9ca3af'
+      }));
+    });
+    g.appendChild(tx(label, {
+      x: '0', y: '0.4', 'font-size': '4', 'font-weight': '700',
+      fill: '#fff', 'text-anchor': 'middle', 'dominant-baseline': 'central'
+    }));
+    return g;
+  }
+
+  function drawSunfire(sx, sy) {
+    const g = el('g', { transform: `translate(${sx.toFixed(1)},${sy.toFixed(1)})` });
+    g.appendChild(el('polygon', {
+      points: '0,-13 13,0 0,13 -13,0',
+      fill: '#d4850a', stroke: '#f5c040', 'stroke-width': '1.5', filter: 'url(#glow2)', opacity: '0.95'
+    }));
+    g.appendChild(el('rect', {
+      x: '-2.5', y: '-12', width: '5', height: '5',
+      fill: '#c07008', stroke: '#f5c040', 'stroke-width': '0.6'
+    }));
+    [[-2.5, -13], [-0.2, -13], [2, -13]].forEach(([bx, by]) => {
+      g.appendChild(el('rect', { x: bx, y: by, width: '1.4', height: '2', fill: '#f5c040' }));
+    });
+    g.appendChild(tx('*', {
+      x: '0', y: '-8.5', 'font-size': '6', fill: '#ffe080',
+      'text-anchor': 'middle', 'dominant-baseline': 'central'
+    }));
+    g.appendChild(tx('Sunfire Castle', {
+      x: '0', y: '20', 'font-size': '5.5',
+      fill: '#f5d060', 'text-anchor': 'middle', 'font-weight': '700'
+    }));
+    return g;
+  }
+
+  function render() {
+    layer.innerHTML = '';
+    const [sfx, sfy] = g2s(SUNFIRE.x, SUNFIRE.y);
+    const sfg = drawSunfire(sfx, sfy);
+    sfg.style.cursor = 'pointer';
+    sfg.addEventListener('mouseenter', e => showTT(e,
+      `<div class="tt-h" style="color:#f5c040">Sunfire Castle</div>
+     <div class="r"><span class="l">Coordinates</span><span class="v">X:${SUNFIRE.x} / Y:${SUNFIRE.y}</span></div>`));
+    sfg.addEventListener('mousemove', e => placeTT(e));
+    sfg.addEventListener('mouseleave', hideTT);
+    layer.appendChild(sfg);
+
+    const showFort = curTypeF.has('all') || curTypeF.has('Fortress');
+    const showStr = curTypeF.has('all') || curTypeF.has('Stronghold');
+
+    if (showFort && curAllyF.has('all') && curJointF.has('all')) {
+      FORTRESSES.forEach(f => {
+        const [sx, sy] = g2s(f.x, f.y);
+        const g = drawFort(sx, sy, '#6b7280', 4, f.n, false);
+        g.addEventListener('mouseenter', e => showTT(e,
+          `<div class="tt-h" style="color:#9ca3af">Fortress #${f.n}</div>
+          <div class="r"><span class="l">Coordinates</span><span class="v">X:${f.x} / Y:${f.y}</span></div>`));
+        g.addEventListener('mousemove', e => placeTT(e));
+        g.addEventListener('mouseleave', hideTT);
+        layer.appendChild(g);
+      });
+    }
+    if (showStr && curAllyF.has('all') && curJointF.has('all')) {
+      STRONGHOLDS.forEach(s => {
+        const [sx, sy] = g2s(s.x, s.y);
+        const g = drawFort(sx, sy, '#e89330', 5, s.n, true);
+        g.addEventListener('mouseenter', e => showTT(e,
+          `<div class="tt-h" style="color:#e89330">Stronghold #${s.n}</div>
+          <div class="r"><span class="l">Coordinates</span><span class="v">X:${s.x} / Y:${s.y}</span></div>`));
+        g.addEventListener('mousemove', e => placeTT(e));
+        g.addEventListener('mouseleave', hideTT);
+        layer.appendChild(g);
+      });
+    }
+
+    FAC.forEach(d => {
+      const typeMatch = curTypeF.has('all') || [...curTypeF].some(f => FMAP[f] && FMAP[f] === d.type);
+      if (!typeMatch) return;
+
+      const ctrlMatch = curAllyF.has('all') || curAllyF.has(d.ctrl);
+      const jointMatch = curJointF.has('all') || (d.oth || []).some(o => curJointF.has(o));
+
+      const bothActive = !curAllyF.has('all') && !curJointF.has('all');
+      if (bothActive) {
+        if (!ctrlMatch && !jointMatch) return;
+      } else {
+        if (!ctrlMatch || !jointMatch) return;
+      }
+
+      const [sx, sy] = g2s(d.x, d.y);
+      const color = COL[d.type] || '#888';
+      const R = 5.5;
+      const g = el('g', { transform: `translate(${sx.toFixed(1)},${sy.toFixed(1)})`, cursor: 'pointer' });
+
+      g.appendChild(el('circle', { cx: '0', cy: '0', r: (R + 1.8).toString(), fill: color, opacity: '0.12' }));
+      g.appendChild(el('circle', {
+        cx: '0', cy: '0', r: R.toString(), fill: color,
+        stroke: 'rgba(255,255,255,0.6)', 'stroke-width': '0.7'
+      }));
+      g.appendChild(tx(d.lv, {
+        x: '0', y: '0.4', 'font-size': '5.5', 'font-weight': '700',
+        fill: '#fff', 'text-anchor': 'middle', 'dominant-baseline': 'central'
+      }));
+
+      if (d.ctrl && d.ctrl !== '-') {
+        const bw = d.ctrl.length * 4.3 + 4;
+        g.appendChild(el('rect', {
+          x: (-bw / 2).toString(), y: (-R - 9.5).toString(),
+          width: bw.toString(), height: '7.5', rx: '2',
+          fill: 'rgba(0,0,0,0.88)', stroke: color, 'stroke-width': '0.5'
+        }));
+        g.appendChild(tx(d.ctrl, {
+          x: '0', y: (-R - 5.2).toString(),
+          'font-size': '4.8', 'font-weight': '700', fill: color,
+          'text-anchor': 'middle', 'dominant-baseline': 'central'
+        }));
+      }
+      if (d.oth && d.oth.length > 0) {
+        const cs = d.oth.slice(0, 2).join(' & ') + (d.oth.length > 2 ? '  ...' : '');
+        g.appendChild(tx(cs, {
+          x: '0', y: (R + 6.5).toString(),
+          'font-size': '4.2', fill: '#ffe060', 'text-anchor': 'middle'
+        }));
+      }
+
+      g.addEventListener('mouseenter', e => {
+        const comp = d.oth && d.oth.length > 0 ? d.oth.join(' & ') : '-';
+        showTT(e,
+          `<div class="tt-h" style="color:${color}">${d.type} - Level ${d.lv}</div>
+          <div class="r"><span class="l">Coordinates</span><span class="v">X:${d.x} / Y:${d.y}</span></div>
+          <div class="r"><span class="l">Controlling Alliance</span><span class="v" style="color:${color}">${d.ctrl || '-'}</span></div>
+          <div class="r"><span class="l">Joint Alliance</span><div class="comp">${comp}</div>`);
+      });
+      g.addEventListener('mousemove', e => placeTT(e));
+      g.addEventListener('mouseleave', hideTT);
+      layer.appendChild(g);
+    });
+  }
+
+  render();
+</script>
